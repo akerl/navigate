@@ -23,9 +23,24 @@ func goRunner(cmd *cobra.Command, args []string) error {
 	}
 	url := args[0]
 
-	allocatorContext, _ := chromedp.NewRemoteAllocator(context.Background(), ws)
-	ctx, _ := chromedp.NewContext(allocatorContext)
-	return chromedp.Run(ctx, chromedp.Navigate(url))
+	allocatorContext, cancel := chromedp.NewRemoteAllocator(context.Background(), ws)
+	defer cancel()
+
+	ctx, cancel := chromedp.NewContext(allocatorContext)
+	defer cancel()
+
+	tabs, err := chromedp.Targets(ctx)
+	if err != nil {
+		return err
+	}
+	if len(tabs) == 0 {
+		return fmt.Errorf("no tabs found")
+	}
+
+	tabCtx, cancel := chromedp.NewContext(ctx, chromedp.WithTargetID(tabs[0].TargetID))
+	defer cancel()
+
+	return chromedp.Run(tabCtx, chromedp.Navigate(url))
 }
 
 var goCmd = &cobra.Command{
