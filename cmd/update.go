@@ -21,10 +21,11 @@ func goRunner(cmd *cobra.Command, args []string) error {
 	} else if len(args) > 1 {
 		return fmt.Errorf("too many args provided")
 	}
+	url := args[0]
 
 	allocatorContext, _ := chromedp.NewRemoteAllocator(context.Background(), ws)
 	ctx, _ := chromedp.NewContext(allocatorContext)
-	return chromedp.Run(ctx, chromedp.Navigate("https://google.com"))
+	return chromedp.Run(ctx, chromedp.Navigate(url))
 }
 
 var goCmd = &cobra.Command{
